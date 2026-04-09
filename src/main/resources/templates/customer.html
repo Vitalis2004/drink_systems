@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{layout :: navbar}"></div>
+
+<main class="container py-5">
+    <div class="card hero-card mb-4">
+        <div class="card-body p-4 p-lg-5">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <span class="badge text-bg-dark mb-3">Branch Ordering</span>
+                    <h1 class="display-6 fw-bold">Place drinks orders by branch</h1>
+                    <p class="lead text-secondary mb-0">Use this starter screen to capture walk-in orders and keep stock moving across your branches.</p>
+                </div>
+                <div class="col-lg-5">
+                    <div class="bg-light rounded-4 p-4 h-100">
+                        <div class="small text-uppercase text-secondary">Available branches</div>
+                        <div class="fw-semibold" th:text="${#lists.size(branches)} + ' active branches'">3 active branches</div>
+                        <hr>
+                        <div class="small text-uppercase text-secondary">Available drinks</div>
+                        <div class="fw-semibold" th:text="${#lists.size(drinks)} + ' menu items'">4 menu items</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="card surface-card">
+        <div class="card-body p-4">
+            <form method="post" th:action="@{/orders}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Customer Name</label>
+                        <input class="form-control" name="customerName" placeholder="Walk-in Customer">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Branch</label>
+                        <select class="form-select" name="branchId" required>
+                            <option th:each="branch : ${branches}" th:value="${branch.id}" th:text="${branch.name + ' - ' + branch.location}">CBD Branch - City Center</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h2 class="h5 mb-3">Drinks</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-xl-3" th:each="drink : ${drinks}">
+                            <div class="border rounded-4 p-3 h-100 bg-light">
+                                <div class="text-secondary small text-uppercase" th:text="${drink.category}">Soda</div>
+                                <div class="fw-semibold fs-5" th:text="${drink.name}">Cola</div>
+                                <div class="mb-3" th:text="'$' + ${drink.price}">$2.50</div>
+                                <label class="form-label">Quantity</label>
+                                <input class="form-control" min="0" name="drink_0" th:name="'drink_' + ${drink.id}" type="number" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end">
+                    <button class="btn btn-dark btn-lg" type="submit">Submit Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{layout :: navbar}"></div>
+
+<main class="container py-5">
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card surface-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-secondary small text-uppercase">Total Orders</div>
+                    <div class="display-6 fw-bold" th:text="${totalOrders}">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card surface-card h-100">
+                <div class="card-body p-4">
+                    <div class="text-secondary small text-uppercase">Total Revenue</div>
+                    <div class="display-6 fw-bold" th:text="'$' + ${totalRevenue}">$0.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card surface-card h-100">
+                <div class="card-body p-4">
+                    <h1 class="h5 mb-3">Orders by branch</h1>
+                    <div class="d-flex justify-content-between border-bottom py-2" th:each="entry : ${ordersByBranch}">
+                        <span th:text="${entry.key}">CBD Branch</span>
+                        <span class="fw-semibold" th:text="${entry.value}">0</span>
+                    </div>
+                    <div class="text-secondary" th:if="${#maps.isEmpty(ordersByBranch)}">No branch order data yet.</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card surface-card h-100">
+                <div class="card-body p-4">
+                    <h1 class="h5 mb-3">Stock snapshot</h1>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th>Branch</th>
+                                <th>Drink</th>
+                                <th>Qty</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="stock : ${stockSnapshot}">
+                                <td th:text="${stock.branch.name}">CBD Branch</td>
+                                <td th:text="${stock.drink.name}">Cola</td>
+                                <td th:text="${stock.quantity}">45</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(stockSnapshot)}">
+                                <td class="text-secondary" colspan="3">No stock data available.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>
