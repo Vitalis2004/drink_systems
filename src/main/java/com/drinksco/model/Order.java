@@ -34,6 +34,8 @@ public class Order {
 
 	private String customerName;
 
+	private String customerPhone;
+
 	private LocalDateTime orderedAt;
 
 	private String status;

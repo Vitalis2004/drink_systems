@@ -4,50 +4,141 @@
 <body>
 <div th:replace="~{layout :: navbar}"></div>
 
+<style>
+    .receipt-shell {
+        max-width: 960px;
+        margin: 0 auto;
+    }
+    .receipt-card {
+        border: 1px solid rgba(30, 58, 138, 0.10);
+        border-radius: 1.5rem;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 20px 56px rgba(17, 24, 39, 0.08);
+        overflow: hidden;
+    }
+    .receipt-head {
+        padding: 1.75rem;
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.96), rgba(20, 184, 166, 0.88));
+        color: #fff;
+    }
+    .receipt-head .muted {
+        color: rgba(255, 255, 255, 0.76);
+    }
+    .receipt-body {
+        padding: 1.75rem;
+    }
+    .receipt-meta {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .meta-box {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: #f9fafb;
+        border: 1px solid rgba(30, 58, 138, 0.08);
+    }
+    .meta-label {
+        color: var(--brand-muted);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 800;
+        margin-bottom: 0.3rem;
+    }
+    .totals-panel {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    .total-box {
+        padding: 1rem 1.1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(30, 58, 138, 0.08);
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(20, 184, 166, 0.08));
+    }
+    @media (max-width: 991.98px) {
+        .receipt-meta,
+        .totals-panel {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <main class="container py-5">
-    <div class="card hero-card">
-        <div class="card-body p-4 p-lg-5">
-            <span class="badge text-bg-success mb-3">Confirmed</span>
-            <h1 class="display-6 fw-bold">Order received</h1>
-            <p class="lead text-secondary mb-4">
-                Order for <span class="fw-semibold" th:text="${order.customerName}">Walk-in Customer</span>
-                at <span class="fw-semibold" th:text="${order.branch.name}">CBD Branch</span>.
-            </p>
-
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                    <tr>
-                        <th>Drink</th>
-                        <th>Qty</th>
-                        <th>Unit Price</th>
-                        <th>Line Total</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="item : ${order.items}">
-                        <td th:text="${item.drink.name}">Cola</td>
-                        <td th:text="${item.quantity}">1</td>
-                        <td th:text="'$' + ${item.unitPrice}">$2.50</td>
-                        <td th:text="'$' + ${item.lineTotal}">$2.50</td>
-                    </tr>
-                    </tbody>
-                </table>
+    <div class="receipt-shell">
+        <div class="receipt-card">
+            <div class="receipt-head">
+                <span class="badge text-bg-success mb-3">Receipt Generated</span>
+                <h1 class="display-6 fw-bold mb-2">Payment received</h1>
+                <p class="muted mb-0">This receipt confirms the completed order and the amount paid by the customer.</p>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                <div>
-                    <div class="text-secondary small">Status</div>
-                    <div class="fw-semibold" th:text="${order.status}">CONFIRMED</div>
+            <div class="receipt-body">
+                <div class="receipt-meta">
+                    <div class="meta-box">
+                        <div class="meta-label">Receipt No</div>
+                        <div class="fw-bold" th:text="'RCPT-' + ${order.id}">RCPT-1</div>
+                    </div>
+                    <div class="meta-box">
+                        <div class="meta-label">Customer</div>
+                        <div class="fw-bold" th:text="${order.customerName}">Walk-in Customer</div>
+                    </div>
+                    <div class="meta-box">
+                        <div class="meta-label">Branch</div>
+                        <div class="fw-bold" th:text="${branchLabel}">NAIROBI (HQ)</div>
+                    </div>
+                    <div class="meta-box">
+                        <div class="meta-label">Date</div>
+                        <div class="fw-bold" th:text="${#temporals.format(order.orderedAt, 'yyyy-MM-dd HH:mm')}">2026-04-10 09:30</div>
+                    </div>
                 </div>
-                <div class="text-end">
-                    <div class="text-secondary small">Total</div>
-                    <div class="fs-4 fw-bold" th:text="'$' + ${order.totalAmount}">$7.50</div>
-                </div>
-            </div>
 
-            <div class="mt-4">
-                <a class="btn btn-dark" th:href="@{/}">Place Another Order</a>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Drink</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Line Total</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${order.items}">
+                            <td th:text="${item.drink.name}">Cola</td>
+                            <td th:text="${item.quantity}">1</td>
+                            <td th:text="'$' + ${item.unitPrice}">$2.50</td>
+                            <td th:text="'$' + ${item.lineTotal}">$2.50</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="totals-panel">
+                    <div class="total-box">
+                        <div class="meta-label">Order Total</div>
+                        <div class="fs-4 fw-bold" th:text="'$' + ${order.totalAmount}">$7.50</div>
+                    </div>
+                    <div class="total-box">
+                        <div class="meta-label">Amount Paid</div>
+                        <div class="fs-4 fw-bold" th:text="'$' + ${amountPaid}">$10.00</div>
+                    </div>
+                    <div class="total-box">
+                        <div class="meta-label">Change Returned</div>
+                        <div class="fs-4 fw-bold" th:text="'$' + ${balance}">$2.50</div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mt-4 border-top pt-4">
+                    <div>
+                        <div class="meta-label">Order Status</div>
+                        <div class="fw-bold" th:text="${order.status}">CONFIRMED</div>
+                    </div>
+                    <a class="btn btn-dark" th:href="@{/}">Create Another Order</a>
+                </div>
             </div>
         </div>
     </div>

@@ -25,7 +25,7 @@ public class OrderService {
 	private final StockService stockService;
 
 	@Transactional
-	public Order placeOrder(Long branchId, String customerName, Map<Long, Integer> quantities) {
+	public Order placeOrder(Long branchId, String customerName, String customerPhone, Map<Long, Integer> quantities) {
 		Branch branch = branchRepository.findById(branchId)
 				.orElseThrow(() -> new IllegalArgumentException("Branch not found."));
 
@@ -60,6 +60,7 @@ public class OrderService {
 		Order order = Order.builder()
 				.branch(branch)
 				.customerName(customerName == null || customerName.isBlank() ? "Walk-in Customer" : customerName)
+				.customerPhone(customerPhone == null || customerPhone.isBlank() ? "Not provided" : customerPhone)
 				.status("CONFIRMED")
 				.totalAmount(total)
 				.build();

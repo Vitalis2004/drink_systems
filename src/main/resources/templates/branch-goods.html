@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{layout :: navbar}"></div>
+
+<style>
+    .menu-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .page-card {
+        border: 1px solid rgba(30, 58, 138, 0.10);
+        border-radius: 1.4rem;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 18px 48px rgba(17, 24, 39, 0.08);
+        overflow: hidden;
+    }
+    .page-card-body {
+        padding: 1.5rem;
+    }
+    .screen-kicker {
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brand-secondary);
+        margin-bottom: 0.35rem;
+    }
+    .drinks-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1.25rem;
+    }
+    .drink-card {
+        border: 1px solid rgba(30, 58, 138, 0.10);
+        border-radius: 1rem;
+        padding: 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .drink-card.in-cart {
+        border-color: rgba(20, 184, 166, 0.46);
+        box-shadow: 0 18px 40px rgba(20, 184, 166, 0.10);
+    }
+    .drink-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
+    }
+    .drink-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: start;
+    }
+    .drink-category {
+        color: var(--brand-secondary);
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+    .drink-price {
+        border-radius: 999px;
+        padding: 0.4rem 0.75rem;
+        background: rgba(249, 115, 22, 0.12);
+        border: 1px solid rgba(249, 115, 22, 0.18);
+        color: #c2410c;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+    .drink-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        color: var(--brand-muted);
+        margin: 0.9rem 0;
+    }
+    .cart-pill {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: 0.35rem 0.65rem;
+        background: rgba(20, 184, 166, 0.12);
+        color: #0f766e;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .cart-summary {
+        position: sticky;
+        top: 5.75rem;
+        display: grid;
+        gap: 1rem;
+    }
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+    }
+    .cart-item + .cart-item {
+        padding-top: 0.9rem;
+        border-top: 1px solid rgba(30, 58, 138, 0.08);
+    }
+    .cart-total-box {
+        border-radius: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.08), rgba(20, 184, 166, 0.10));
+        border: 1px solid rgba(30, 58, 138, 0.10);
+    }
+    .cart-total-box .amount {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--brand-primary);
+    }
+    .empty-cart {
+        color: var(--brand-muted);
+        text-align: center;
+        padding: 1rem 0.5rem;
+    }
+    @media (max-width: 1199.98px) {
+        .menu-layout {
+            grid-template-columns: 1fr;
+        }
+        .cart-summary {
+            position: static;
+        }
+    }
+    @media (max-width: 991.98px) {
+        .drinks-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<main class="container py-5 page-shell">
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="menu-layout">
+        <section class="page-card">
+            <div class="page-card-body">
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-start">
+                    <div>
+                        <div class="screen-kicker">Screen 2</div>
+                        <h1 class="h3 mb-2">Drinks menu</h1>
+                        <p class="text-secondary mb-0" th:text="'Branch: ' + ${selectedBranchLabel}">Branch: NAIROBI (HQ)</p>
+                    </div>
+                    <a class="btn btn-outline-accent" th:href="@{/}">Change Branch</a>
+                </div>
+
+                <div class="drinks-grid">
+                    <article
+                        class="drink-card"
+                        th:classappend="${cartQuantities[stock.drink.id] != null} ? ' in-cart' : ''"
+                        th:each="stock : ${stockLevels}">
+                        <div class="drink-head">
+                            <div>
+                                <div class="drink-category" th:text="${stock.drink.category}">Soda</div>
+                                <div class="h5 mb-0" th:text="${stock.drink.name}">Cola</div>
+                            </div>
+                            <div class="drink-price" th:text="'$' + ${stock.drink.price}">$2.50</div>
+                        </div>
+
+                        <div class="drink-meta">
+                            <span th:text="|${stock.quantity} in stock|">45 in stock</span>
+                            <span class="cart-pill" th:if="${cartQuantities[stock.drink.id] != null}" th:text="|${cartQuantities[stock.drink.id]} in cart|">1 in cart</span>
+                            <span class="cart-pill" th:if="${cartQuantities[stock.drink.id] == null}">Ready</span>
+                        </div>
+
+                        <form method="post" th:action="@{/cart/add}">
+                            <input name="branchId" th:value="${selectedBranch.id}" type="hidden">
+                            <input name="drinkId" th:value="${stock.drink.id}" type="hidden">
+
+                            <label class="form-label fw-semibold">Quantity</label>
+                            <input class="form-control" min="1" name="quantity" th:attr="max=${stock.quantity}" type="number" value="1">
+                            <div class="form-text">Enter quantity, then add the drink to cart.</div>
+
+                            <button class="btn btn-dark mt-3 w-100" type="submit">Add To Cart</button>
+                        </form>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <aside class="cart-summary">
+            <div class="page-card">
+                <div class="page-card-body">
+                    <div class="screen-kicker">Current Cart</div>
+                    <h2 class="h4 mb-2">Selected drinks</h2>
+                    <p class="text-secondary">Review current selections before going to checkout.</p>
+
+                    <div class="cart-total-box mb-3">
+                        <div class="text-secondary mb-1">Running Total</div>
+                        <div class="amount" th:text="'$' + ${cartTotal}">$0.00</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-secondary">Units in cart</span>
+                        <span class="fw-bold" th:text="${cartUnits}">0</span>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(cartItems)}">
+                        <div class="cart-item" th:each="item : ${cartItems}">
+                            <div>
+                                <div class="fw-semibold" th:text="${item.drinkName}">Cola</div>
+                                <div class="text-secondary small" th:text="|${item.quantity} x $${item.unitPrice}|">1 x $2.50</div>
+                            </div>
+                            <div class="fw-bold" th:text="'$' + ${item.lineTotal}">$2.50</div>
+                        </div>
+                    </div>
+
+                    <div class="empty-cart" th:if="${#lists.isEmpty(cartItems)}">
+                        No drinks added yet.
+                    </div>
+
+                    <a
+                        class="btn btn-primary btn-lg w-100 mt-4"
+                        th:classappend="${#lists.isEmpty(cartItems)} ? ' disabled' : ''"
+                        th:href="@{/checkout(branchId=${selectedBranch.id})}">
+                        Go To Checkout
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

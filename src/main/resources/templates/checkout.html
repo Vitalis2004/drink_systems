@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${pageTitle})}"></head>
+<body>
+<div th:replace="~{layout :: navbar}"></div>
+
+<style>
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .page-card {
+        border: 1px solid rgba(30, 58, 138, 0.10);
+        border-radius: 1.4rem;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 18px 48px rgba(17, 24, 39, 0.08);
+        overflow: hidden;
+    }
+    .page-card-body {
+        padding: 1.5rem;
+    }
+    .screen-kicker {
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brand-secondary);
+        margin-bottom: 0.35rem;
+    }
+    .checkout-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+        padding: 1rem 0;
+    }
+    .checkout-item + .checkout-item {
+        border-top: 1px solid rgba(30, 58, 138, 0.08);
+    }
+    .pay-box {
+        position: sticky;
+        top: 5.75rem;
+    }
+    .total-card {
+        border-radius: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.08), rgba(20, 184, 166, 0.10));
+        border: 1px solid rgba(30, 58, 138, 0.10);
+    }
+    .total-card .amount {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--brand-primary);
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+    }
+    .summary-row + .summary-row {
+        margin-top: 0.9rem;
+        padding-top: 0.9rem;
+        border-top: 1px solid rgba(30, 58, 138, 0.08);
+    }
+    .summary-label {
+        color: var(--brand-muted);
+    }
+    .summary-value {
+        font-weight: 800;
+    }
+    @media (max-width: 1199.98px) {
+        .checkout-layout {
+            grid-template-columns: 1fr;
+        }
+        .pay-box {
+            position: static;
+        }
+    }
+</style>
+
+<main class="container py-5 page-shell">
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="checkout-layout">
+        <section class="page-card">
+            <div class="page-card-body">
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-start">
+                    <div>
+                        <div class="screen-kicker">Screen 3</div>
+                        <h1 class="h3 mb-2">Checkout</h1>
+                        <p class="text-secondary mb-0" th:text="'Branch: ' + ${selectedBranchLabel}">Branch: NAIROBI (HQ)</p>
+                    </div>
+                    <a class="btn btn-outline-accent" th:href="@{/goods(branchId=${selectedBranch.id})}">Back To Menu</a>
+                </div>
+
+                <div class="mt-4">
+                    <div class="checkout-item" th:each="item : ${cartItems}">
+                        <div>
+                            <div class="fw-semibold" th:text="${item.drinkName}">Cola</div>
+                            <div class="text-secondary small" th:text="|${item.quantity} x $${item.unitPrice}|">2 x $2.50</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold" th:text="'$' + ${item.lineTotal}">$5.00</div>
+                            <form class="mt-2" method="post" th:action="@{/cart/remove}">
+                                <input name="branchId" th:value="${selectedBranch.id}" type="hidden">
+                                <input name="drinkId" th:value="${item.drinkId}" type="hidden">
+                                <button class="btn btn-sm btn-outline-accent" type="submit">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="pay-box">
+            <div class="page-card">
+                <div class="page-card-body">
+                    <div class="screen-kicker">Payment</div>
+                    <h2 class="h4 mb-2">Pay</h2>
+                    <p class="text-secondary">Enter customer details and payment amount to generate the receipt.</p>
+
+                    <form id="pay-form" method="post" th:action="@{/orders}">
+                        <input name="branchId" th:value="${selectedBranch.id}" type="hidden">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Customer Name</label>
+                            <input class="form-control" name="customerName" placeholder="Walk-in customer or customer name">
+                        </div>
+
+                        <div class="total-card mb-3">
+                            <div class="summary-label mb-1">Total Amount</div>
+                            <div class="amount" id="order-total" th:text="'$' + ${cartTotal}">$0.00</div>
+                        </div>
+
+                        <div class="summary-row">
+                            <span class="summary-label">Selected drinks</span>
+                            <span class="summary-value" th:text="${#lists.size(cartItems)}">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Units</span>
+                            <span class="summary-value" th:text="${cartUnits}">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Branch</span>
+                            <span class="summary-value" th:text="${selectedBranchLabel}">NAIROBI (HQ)</span>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="form-label fw-semibold">Amount Paid</label>
+                            <input class="form-control" id="amountPaid" min="0" name="amountPaid" step="0.01" type="number" value="0">
+                            <div class="form-text">Payment must be at least the total amount.</div>
+                        </div>
+
+                        <div class="summary-row mt-4">
+                            <span class="summary-label">Change</span>
+                            <span class="summary-value" id="change-amount">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Status</span>
+                            <span class="summary-value" id="pay-status">Waiting for payment</span>
+                        </div>
+
+                        <button class="btn btn-dark btn-lg w-100 mt-4" id="pay-button" type="submit">Pay</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<div th:replace="~{layout :: scripts}"></div>
+<script th:inline="javascript">
+    const totalAmount = Number(/*[[${cartTotal}]]*/ 0);
+    const amountPaidInput = document.getElementById('amountPaid');
+    const changeAmount = document.getElementById('change-amount');
+    const payStatus = document.getElementById('pay-status');
+    const payButton = document.getElementById('pay-button');
+
+    function formatMoney(value) {
+        return `$${Number(value).toFixed(2)}`;
+    }
+
+    function updatePaymentState() {
+        const amountPaid = Number(amountPaidInput.value || 0);
+        const change = amountPaid - totalAmount;
+        changeAmount.textContent = formatMoney(change);
+
+        if (amountPaid < totalAmount) {
+            payStatus.textContent = 'Insufficient payment';
+            payButton.disabled = true;
+            return;
+        }
+
+        payStatus.textContent = 'Ready to generate receipt';
+        payButton.disabled = false;
+    }
+
+    amountPaidInput.addEventListener('input', updatePaymentState);
+    updatePaymentState();
+</script>
+</body>
+</html>
